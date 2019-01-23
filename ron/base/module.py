@@ -24,22 +24,17 @@ class Module(Bottle):
         Bottle.__init__(self, catchall, autojson)
 
         if isinstance(config, dict):
-            try:
-                self.namespace = config.get('namespace')
-                self.package = import_module(self.namespace)
-                self.base_path = os.path.dirname(self.package.__file__)
-                self.views_path = config.get('views_path', os.path.join(self.base_path, 'views'))
-                self.modules = config.get('modules', None)
-                self.parent = parent
+            self.namespace = config.get('namespace')
+            self.package = import_module(self.namespace)
+            self.base_path = os.path.dirname(self.package.__file__)
+            self.views_path = config.get('views_path', os.path.join(self.base_path, 'views'))
+            self.modules = config.get('modules', None)
+            self.parent = parent
 
-                self.init_controllers()
+            self.init_controllers()
 
-                if config.get('modules', False):
-                    self.init_modules(config.get('modules'))
-
-            except Exception as e:
-                print(e)
-                sys.exit(1)
+            if config.get('modules', False):
+                self.init_modules(config.get('modules'))
 
     def init_controllers(self):
         """Initializes all the controllers in the [controllers_path] directory and registers them against the currently

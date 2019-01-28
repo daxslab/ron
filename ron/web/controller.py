@@ -1,6 +1,5 @@
 from functools import wraps
 from inflection import underscore
-from ron.gluon.template import render
 
 
 def routeapp(obj, app):
@@ -44,16 +43,15 @@ class Controller:
             Controller.add_route(func, route, **route_args)
 
             @wraps(func)
-            def wrapper(*args, **kwargs):
-                result = func(*args, **kwargs)
-                instance = args[0]
+            def wrapper(self, *args, **kwargs):
+                result = func(self, *args, **kwargs)
                 if not filepath:
                     action = func.__name__
                     filename = action + ext
                 else:
                     filename = filepath
 
-                return render(filename=filename, path=instance.views_path, context=result)
+                return self.module.template(self.views_path + '/' +filename, **result)
 
             return wrapper
 

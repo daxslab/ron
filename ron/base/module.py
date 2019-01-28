@@ -1,12 +1,12 @@
 import inspect
 import os
 import pkgutil
-import sys
 
 from importlib import import_module
 from bottle import Bottle
+
+from ron.templates import gluon_template
 from ron.web import Controller
-from ron.exceptions.invalid_configuration_exception import InvalidConfigurationException
 
 
 class Module(Bottle):
@@ -25,6 +25,8 @@ class Module(Bottle):
 
         if isinstance(config, dict):
             self.namespace = config.get('namespace')
+            # self.template = config.get('template', jinja2_template)
+            self.template = config.get('template', gluon_template)
             self.package = import_module(self.namespace)
             self.base_path = os.path.dirname(self.package.__file__)
             self.views_path = config.get('views_path', os.path.join(self.base_path, 'views'))

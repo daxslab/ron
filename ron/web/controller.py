@@ -1,6 +1,8 @@
 import functools
 from functools import wraps
 from inflection import underscore
+from bottle import view
+from collections import MutableMapping
 
 
 def routeapp(obj, app):
@@ -21,6 +23,7 @@ class Controller:
     def __init__(self, module):
         self.module = module
         self.views_path = module.views_path + "/" + underscore(self.__class__.__name__)
+        self.view = functools.partial(view, template_adapter=self.module.template_adapter)
 
         routeapp(self, self.module.app())
 
@@ -58,3 +61,31 @@ class Controller:
             return wrapper
 
         return real_decorator
+
+    def view(tpl_name, **defaults):
+        ''' Decorator: renders a template for a handler.
+                The handler can control its behavior like that:
+
+                  - return a dict of template vars to fill out the template
+                  - return something other than a dict and the view decorator will not
+                    process the template, but return the handler result as is.
+                    This includes returning a HTTPResponse(dict) to get,
+                    for instance, JSON with autojson or other castfilters.
+            '''
+        def decorator(func):
+            @functools.wraps(func)
+            def wrapper(self, *args, **kwargs):
+                from bottle import template
+                template = functools.partial(template, template_adapter=self.module.template_adapter)
+                result = func(self, *args, **kwargs)
+                if isinstance(result, (dict, MutableMapping)):
+                    tplvars = defaults.copy()
+                    tplvars.update(result)
+                    return template(tpl_name, **tplvars)
+                elif result is None:
+                    return template(tpl_name, defaults)
+                return result
+
+            return wrapper
+
+        return decorator

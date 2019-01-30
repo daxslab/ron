@@ -1,3 +1,4 @@
+import functools
 from functools import wraps
 from inflection import underscore
 
@@ -44,14 +45,15 @@ class Controller:
 
             @wraps(func)
             def wrapper(self, *args, **kwargs):
+                from bottle import template
                 result = func(self, *args, **kwargs)
                 if not filepath:
                     action = func.__name__
                     filename = action + ext
                 else:
                     filename = filepath
-
-                return self.module.template(self.views_path + '/' +filename, **result)
+                template = functools.partial(template, template_adapter=self.module.template_adapter)
+                return template(self.views_path + '/' +filename, **result)
 
             return wrapper
 

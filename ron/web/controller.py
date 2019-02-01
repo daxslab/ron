@@ -22,7 +22,7 @@ class Controller:
 
     def __init__(self, module):
         self.module = module
-        self.views_path = module.views_path + "/" + underscore(self.__class__.__name__)
+        self.views_path = module.views_path
         self.view = functools.partial(view, template_adapter=self.module.template_adapter)
 
         routeapp(self, self.module.app())
@@ -52,11 +52,11 @@ class Controller:
                 result = func(self, *args, **kwargs)
                 if not filepath:
                     action = func.__name__
-                    filename = action + ext
+                    filename = underscore(self.__class__.__name__) + '/' + action + ext
                 else:
                     filename = filepath
                 template = functools.partial(template, template_adapter=self.module.template_adapter)
-                return template(self.views_path + '/' +filename, **result)
+                return template(filename, template_lookup=[self.views_path],  **result)
 
             return wrapper
 

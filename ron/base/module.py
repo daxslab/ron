@@ -6,6 +6,7 @@ from importlib import import_module
 from bottle import Bottle
 
 from ron.base.object import Object
+from ron.exceptions.invalid_configuration_exception import InvalidConfigurationException
 from ron.templates import GluonTemplate
 from ron.web import Controller
 
@@ -30,6 +31,9 @@ class Module(Bottle, Object):
 
     # modules
     modules = []
+
+    # mount type can be used for defining mount behavior, can be "mount" or "merge"
+    mount_type = 'mount'
 
 
     def __init__(self, config=None, parent=None, catchall=True, autojson=True):
@@ -75,10 +79,16 @@ class Module(Bottle, Object):
 
     def init_modules(self, modules):
         self.modules = []
-        for module in modules:
-            module_class = modules[module].get('module_class')
-            module_instance = module_class(config=modules[module])
-            self.mount(module, module_instance)
+        for module_name in modules:
+            module_class = modules[module_name].get('module_class')
+            module_instance = module_class(config=modules[module_name])
+            if self.mount_type == 'mount':
+                self.mount(module_name, module_instance)
+            elif self.mount_type == 'merge':
+                self.merge(module_instance)
+            else:
+                raise InvalidConfigurationException(
+                    'Mount type should be "mount" or "merge", not {mount_type}'.format(mount_type=self.mount_type))
             self.modules.append(module_instance)
 
     def app(self):

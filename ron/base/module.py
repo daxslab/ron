@@ -24,7 +24,8 @@ class Module(Bottle):
         Bottle.__init__(self, catchall, autojson)
 
         if isinstance(config, dict):
-            self.namespace = config.get('namespace')
+            self.module_class = config.get('module_class')
+            self.namespace = self._get_module_namespace()
             self.template_adapter = config.get('template_adapter', GluonTemplate)
             self.package = import_module(self.namespace)
             self.base_path = os.path.dirname(self.package.__file__)
@@ -36,6 +37,11 @@ class Module(Bottle):
 
             if config.get('modules', False):
                 self.init_modules(config.get('modules'))
+
+    def _get_module_namespace(self):
+        module = inspect.getmodule(self.module_class)
+        parent_name = '.'.join(module.__name__.split('.')[:-1])
+        return parent_name
 
     def init_controllers(self):
         """Initializes all the controllers in the [controllers_path] directory and registers them against the currently

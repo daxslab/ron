@@ -5,11 +5,12 @@ import pkgutil
 from importlib import import_module
 from bottle import Bottle
 
+from ron.base.object import Object
 from ron.templates import GluonTemplate
 from ron.web import Controller
 
 
-class Module(Bottle):
+class Module(Bottle, Object):
     """Module is the base class for module and application classes.
 
     A module represents a sub-application which contains MVC elements by itself, such as
@@ -18,19 +19,30 @@ class Module(Bottle):
     A module may consist of sub-modules.
     """
 
+    # Module class object
+    module_class = None
+
+    # template adapter
+    template_adapter = GluonTemplate
+
+    # views path
+    views_path = 'views'
+
+    # modules
+    modules = []
+
+
     def __init__(self, config=None, parent=None, catchall=True, autojson=True):
         """Initializes the module setting the correct path for the controllers and views"""
 
         Bottle.__init__(self, catchall, autojson)
+        Object.__init__(self, config=config)
 
         if isinstance(config, dict):
-            self.module_class = config.get('module_class')
             self.namespace = self._get_module_namespace()
-            self.template_adapter = config.get('template_adapter', GluonTemplate)
             self.package = import_module(self.namespace)
             self.base_path = os.path.dirname(self.package.__file__)
-            self.views_path = config.get('views_path', os.path.join(self.base_path, 'views'))
-            self.modules = config.get('modules', None)
+            self.views_path = os.path.join(self.base_path, self.views_path)
             self.parent = parent
 
             self.init_controllers()
@@ -64,7 +76,8 @@ class Module(Bottle):
     def init_modules(self, modules):
         self.modules = []
         for module in modules:
-            module_instance = Module(modules[module])
+            module_class = modules[module].get('module_class')
+            module_instance = module_class(config=modules[module])
             self.mount(module, module_instance)
             self.modules.append(module_instance)
 

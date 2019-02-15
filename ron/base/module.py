@@ -49,39 +49,42 @@ class Module(Bottle, Object):
             self.views_path = os.path.join(self.base_path, self.views_path)
             self.parent = parent
 
-            self.init_controllers()
-
-            if config.get('modules', False):
-                self.init_modules(config.get('modules'))
+            # self.init_controllers()
+            #
+            # if config.get('modules', False):
+            #     self.init_modules(config.get('modules'))
 
     def _get_module_namespace(self):
         module = inspect.getmodule(self.module_class)
         parent_name = '.'.join(module.__name__.split('.')[:-1])
         return parent_name
 
+    def initialize(self):
+        self.init_controllers()
+        if self.modules:
+            self.init_modules(self.modules)
+
     def init_controllers(self):
         """Initializes all the controllers in the [controllers_path] directory and registers them against the currently
             running app."""
-
         controllers_namespace = self.namespace + ".controllers"  # TODO: allow customize this
         controllers_package = import_module(controllers_namespace)
 
-        controllers = []
+        self.controllers = []
         controllers_modules = self._get_package_modules(controllers_package)
         for controller_name in controllers_modules:
             imported_controller = import_module('.' + controller_name, package=controllers_namespace)
             for i in dir(imported_controller):
                 attribute = getattr(imported_controller, i)
                 if inspect.isclass(attribute) and issubclass(attribute, Controller):
-                    controllers.append(attribute(self))
-
-        return controllers
+                    self.controllers.append(attribute(self))
 
     def init_modules(self, modules):
         self.modules = []
         for module_name in modules:
             module_class = modules[module_name].get('module_class')
             module_instance = module_class(config=modules[module_name])
+            module_instance.initialize()
             if self.mount_type == 'mount':
                 self.mount(module_name, module_instance)
             elif self.mount_type == 'merge':

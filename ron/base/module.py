@@ -35,6 +35,7 @@ class Module(Bottle, Object):
     # mount type can be used for defining mount behavior, can be "mount" or "merge"
     mount_type = 'mount'
 
+    # components configuration information for this module
     components = {}
 
 

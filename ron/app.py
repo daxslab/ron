@@ -3,9 +3,6 @@ from ron.base.singleton import Singleton
 
 class Application(Module, metaclass=Singleton):
 
-    # components configuration information for this application
-    components = {}
-
     # configuration information for this application
     middlewares = []
 

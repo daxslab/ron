@@ -35,6 +35,8 @@ class Module(Bottle, Object):
     # mount type can be used for defining mount behavior, can be "mount" or "merge"
     mount_type = 'mount'
 
+    components = {}
+
 
     def __init__(self, config=None, parent=None, catchall=True, autojson=True):
         """Initializes the module setting the correct path for the controllers and views"""
@@ -49,10 +51,19 @@ class Module(Bottle, Object):
             self.views_path = os.path.join(self.base_path, self.views_path)
             self.parent = parent
 
-            # self.init_controllers()
-            #
-            # if config.get('modules', False):
-            #     self.init_modules(config.get('modules'))
+        self.load_components()
+
+
+    def load_components(self, on_initialize=False):
+        """
+        Load module components from configuration
+        """
+        for name, component_data in self.components.items():
+            start_on_initialize = component_data.get('on_initialize', False)
+            if start_on_initialize == on_initialize:
+                component = component_data['class'](**component_data.get('options', {}))
+                setattr(self, name, component)
+
 
     def _get_module_namespace(self):
         module = inspect.getmodule(self.module_class)
@@ -63,6 +74,7 @@ class Module(Bottle, Object):
         self.init_controllers()
         if self.modules:
             self.init_modules(self.modules)
+        self.load_components(on_initialize=True)
 
     def init_controllers(self):
         """Initializes all the controllers in the [controllers_path] directory and registers them against the currently

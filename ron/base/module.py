@@ -20,9 +20,6 @@ class Module(Bottle, RonObject):
     A module may consist of sub-modules.
     """
 
-    # Module class object
-    _class = None
-
     # template adapter
     template_adapter = GluonTemplate
 
@@ -34,6 +31,8 @@ class Module(Bottle, RonObject):
 
     # mount type can be used for defining mount behavior, can be "mount" or "merge"
     mount_type = 'mount'
+
+    controllers = []
 
     # components configuration information for this module
     components = {}
@@ -54,8 +53,9 @@ class Module(Bottle, RonObject):
         Bottle.__init__(self, catchall, autojson)
         RonObject.__init__(self, config=config)
 
-        if isinstance(config, dict) and config.get('_class', None):
+        if isinstance(config, dict):
             self.__namespace = self._get_module_namespace()
+            # print(self.__class__)
             self.__package = import_module(self.__namespace)
             self.base_path = os.path.dirname(self.__package.__file__)
             self.views_path = os.path.join(self.base_path, self.views_path)
@@ -71,13 +71,13 @@ class Module(Bottle, RonObject):
         for name, component_data in self.components.items():
             start_on_initialize = component_data.get('on_initialize', False)
             if start_on_initialize == on_initialize:
-                component = component_data['_class'](**component_data.get('options', {}))
-                # component = RonObject.instanceObject(component_data)
+                component_data.pop('on_initialize', None)
+                component = RonObject.instanceObject(component_data)
                 setattr(self, name, component)
 
 
     def _get_module_namespace(self):
-        module = inspect.getmodule(self._class)
+        module = inspect.getmodule(self.__class__)
         parent_name = '.'.join(module.__name__.split('.')[:-1])
         return parent_name
 
@@ -91,10 +91,11 @@ class Module(Bottle, RonObject):
     def init_controllers(self):
         """Initializes all the controllers in the [controllers_path] directory and registers them against the currently
             running app."""
+        if self.controllers == None:
+            return
         controllers_namespace = self.__namespace + ".controllers"  # TODO: allow customize this
         controllers_package = import_module(controllers_namespace)
 
-        self.controllers = []
         controllers_modules = self._get_package_modules(controllers_package)
         for controller_name in controllers_modules:
             imported_controller = import_module('.' + controller_name, package=controllers_namespace)
@@ -106,7 +107,7 @@ class Module(Bottle, RonObject):
     def init_modules(self, modules):
         for module_name in modules:
             module_class = modules[module_name].get('_class')
-            module_instance = module_class(config=modules[module_name])
+            module_instance = RonObject.instanceObject(modules[module_name])
             module_instance.initialize()
             if module_instance.mount_type == 'mount':
                 self.mount(module_name, module_instance)

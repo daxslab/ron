@@ -6,6 +6,9 @@ class Application(Module, metaclass=Singleton):
     # configuration information for this application
     middlewares = []
 
+    # application instance has no controllers
+    controllers = None
+
     def __init__(self, config=None, catchall=True, autojson=True):
         # self.__name__ = name
 

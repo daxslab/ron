@@ -16,9 +16,11 @@ class RonObject:
 
     @staticmethod
     def instanceObject(config):
-        object_class = config.get('_class', None)
+        object_class = config.pop('class', None)
         if not object_class:
             raise InvalidConfigurationException('Config should contain a _class object')
         # if not issubclass(object_class, RonObject):
         #     raise InvalidConfigurationException('_class should inherit from RonObject')
-        return object_class(config)
+        if not issubclass(object_class, RonObject):
+            return object_class(**config.get('options', {}))
+        return object_class(config=config.get('options', {}))

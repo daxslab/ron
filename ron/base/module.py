@@ -5,13 +5,13 @@ import pkgutil
 from importlib import import_module
 from bottle import Bottle
 
-from ron.base.object import Object
+from ron.base.ronobject import RonObject
 from ron.exceptions.invalid_configuration_exception import InvalidConfigurationException
 from ron.templates import GluonTemplate
 from ron.web import Controller
 
 
-class Module(Bottle, Object):
+class Module(Bottle, RonObject):
     """Module is the base class for module and application classes.
 
     A module represents a sub-application which contains MVC elements by itself, such as
@@ -21,7 +21,7 @@ class Module(Bottle, Object):
     """
 
     # Module class object
-    module_class = None
+    _class = None
 
     # template adapter
     template_adapter = GluonTemplate
@@ -38,17 +38,26 @@ class Module(Bottle, Object):
     # components configuration information for this module
     components = {}
 
+    # module base path
+    base_path = None
+
+    # Module namespace. Private
+    __namespace = None
+
+    # Module package. Private
+    __package = None
+
 
     def __init__(self, config=None, parent=None, catchall=True, autojson=True):
         """Initializes the module setting the correct path for the controllers and views"""
 
         Bottle.__init__(self, catchall, autojson)
-        Object.__init__(self, config=config)
+        RonObject.__init__(self, config=config)
 
-        if isinstance(config, dict):
-            self.namespace = self._get_module_namespace()
-            self.package = import_module(self.namespace)
-            self.base_path = os.path.dirname(self.package.__file__)
+        if isinstance(config, dict) and config.get('_class', None):
+            self.__namespace = self._get_module_namespace()
+            self.__package = import_module(self.__namespace)
+            self.base_path = os.path.dirname(self.__package.__file__)
             self.views_path = os.path.join(self.base_path, self.views_path)
             self.parent = parent
 
@@ -62,17 +71,19 @@ class Module(Bottle, Object):
         for name, component_data in self.components.items():
             start_on_initialize = component_data.get('on_initialize', False)
             if start_on_initialize == on_initialize:
-                component = component_data['class'](**component_data.get('options', {}))
+                component = component_data['_class'](**component_data.get('options', {}))
+                # component = RonObject.instanceObject(component_data)
                 setattr(self, name, component)
 
 
     def _get_module_namespace(self):
-        module = inspect.getmodule(self.module_class)
+        module = inspect.getmodule(self._class)
         parent_name = '.'.join(module.__name__.split('.')[:-1])
         return parent_name
 
     def initialize(self):
-        self.init_controllers()
+        if self.__namespace:
+            self.init_controllers()
         if self.modules:
             self.init_modules(self.modules)
         self.load_components(on_initialize=True)
@@ -80,7 +91,7 @@ class Module(Bottle, Object):
     def init_controllers(self):
         """Initializes all the controllers in the [controllers_path] directory and registers them against the currently
             running app."""
-        controllers_namespace = self.namespace + ".controllers"  # TODO: allow customize this
+        controllers_namespace = self.__namespace + ".controllers"  # TODO: allow customize this
         controllers_package = import_module(controllers_namespace)
 
         self.controllers = []
@@ -93,19 +104,19 @@ class Module(Bottle, Object):
                     self.controllers.append(attribute(self))
 
     def init_modules(self, modules):
-        self.modules = []
         for module_name in modules:
-            module_class = modules[module_name].get('module_class')
+            module_class = modules[module_name].get('_class')
             module_instance = module_class(config=modules[module_name])
             module_instance.initialize()
-            if self.mount_type == 'mount':
+            if module_instance.mount_type == 'mount':
                 self.mount(module_name, module_instance)
-            elif self.mount_type == 'merge':
+            elif module_instance.mount_type == 'merge':
                 self.merge(module_instance)
             else:
                 raise InvalidConfigurationException(
                     'Mount type should be "mount" or "merge", not {mount_type}'.format(mount_type=self.mount_type))
-            self.modules.append(module_instance)
+            # self.modules.append(module_instance)
+            modules[module_name] = module_instance
 
     def app(self):
         current = self

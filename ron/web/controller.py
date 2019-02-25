@@ -12,6 +12,10 @@ def routeapp(obj, app):
             if isinstance(attr.route, dict):
                 route_params = attr.route
                 app.route(**route_params)(attr)
+            elif isinstance(attr.route, list):
+                for route_data in attr.route:
+                    route_params = route_data
+                    app.route(**route_params)(attr)
 
 
 class Controller:
@@ -29,10 +33,12 @@ class Controller:
 
     @staticmethod
     def add_route(function, route, **route_args):
+        if not hasattr(function, 'route'):
+            function.route = []
         if not route:
-            function.route = dict(path='/' + underscore(function.__name__), **route_args)
+            function.route.append(dict(path='/' + underscore(function.__name__), **route_args))
         else:
-            function.route = dict(path=route, **route_args)
+            function.route.append(dict(path=route, **route_args))
 
     def route(route=None, **route_args):
         def decorator(f):

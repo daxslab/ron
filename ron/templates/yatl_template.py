@@ -5,9 +5,9 @@ from bottle import BaseTemplate, template
 
 
 
-class GluonTemplate(BaseTemplate):
+class YatlTemplate(BaseTemplate):
     def prepare(self, *args, **kwargs):
-        from ron.gluon.template import render
+        from yatl import render
         self.tpl = render
 
     def render(self, *args, **kwargs):
@@ -17,4 +17,4 @@ class GluonTemplate(BaseTemplate):
         dirname = os.path.dirname(self.filename)
         return self.tpl(path=dirname, filename=self.filename, context=_defaults)
 
-gluon_template = functools.partial(template, template_adapter=GluonTemplate)
+yatl_template = functools.partial(template, template_adapter=YatlTemplate)

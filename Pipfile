@@ -6,6 +6,7 @@ name = "pypi"
 [packages]
 bottle = "*"
 inflection = "*"
+yatl = "*"
 
 [dev-packages]
 

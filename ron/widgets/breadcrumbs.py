@@ -1,5 +1,5 @@
 from ron.base import Widget
-from ron.helpers.html import OL, A, LI
+from yatl.helpers import OL, A, LI
 from ron import request
 
 
@@ -20,4 +20,4 @@ class Breadcrumbs(Widget):
 
             items.append(LI(A(item['label'], _href=item['url']), **this_item_options))
 
-        return str(OL(*items, _class='breadcrumbs'))
+        return OL(*items, _class='breadcrumbs').xml()

@@ -7,7 +7,7 @@ from bottle import Bottle
 
 from ron.base.ronobject import RonObject
 from ron.exceptions.invalid_configuration_exception import InvalidConfigurationException
-from ron.templates import GluonTemplate
+from ron.templates.yatl_template import YatlTemplate
 from ron.web import Controller
 
 
@@ -21,7 +21,7 @@ class Module(Bottle, RonObject):
     """
 
     # template adapter
-    template_adapter = GluonTemplate
+    template_adapter = YatlTemplate
 
     # views path
     views_path = 'views'

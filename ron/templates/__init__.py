@@ -1,2 +1,2 @@
-from ron.templates.gluon_template import gluon_template
-from ron.templates.gluon_template import GluonTemplate
+from ron.templates.yatl_template import YatlTemplate
+from ron.templates.yatl_template import yatl_template

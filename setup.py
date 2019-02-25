@@ -10,8 +10,7 @@ from distutils.core import setup
 setup(
     name='ron',
     version='0.1',
-    packages=['ron', 'ron.web', 'ron.base', 'ron.gluon', 'ron.config',
-              'ron.helpers', 'ron.widgets', 'ron.exceptions'],
+    packages=['ron', 'ron.base', 'ron.caching', 'ron.exceptions', 'ron.templates', 'ron.web', 'ron.widgets'],
     url='ron.daxslab.com',
     license='MIT',
     author='Daxslab',
@@ -19,6 +18,7 @@ setup(
     description='Uncomplicated Python web framework',
     install_requires=[
         'bottle',
-        'inflection'
+        'inflection',
+        'yatl'
     ]
 )

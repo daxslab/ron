@@ -34,8 +34,13 @@ class Module(Bottle, RonObject):
 
     controllers = []
 
+    models = []
+
     # components configuration information for this module
     components = {}
+
+    # module plugins
+    module_plugins = []
 
     # module base path
     base_path = None
@@ -55,7 +60,6 @@ class Module(Bottle, RonObject):
 
         if isinstance(config, dict):
             self.__namespace = self._get_module_namespace()
-            # print(self.__class__)
             self.__package = import_module(self.__namespace)
             self.base_path = os.path.dirname(self.__package.__file__)
             self.views_path = os.path.join(self.base_path, self.views_path)
@@ -82,11 +86,14 @@ class Module(Bottle, RonObject):
         return parent_name
 
     def initialize(self):
+        self.load_components(on_initialize=True)
+        for plugin in self.module_plugins:
+            self.install(plugin)
         if self.__namespace:
             self.init_controllers()
+            self.init_models()
         if self.modules:
             self.init_modules(self.modules)
-        self.load_components(on_initialize=True)
 
     def init_controllers(self):
         """Initializes all the controllers in the [controllers_path] directory and registers them against the currently
@@ -103,6 +110,29 @@ class Module(Bottle, RonObject):
                 attribute = getattr(imported_controller, i)
                 if inspect.isclass(attribute) and issubclass(attribute, Controller):
                     self.controllers.append(attribute(self))
+
+    def init_models(self):
+        """
+        Registers all the models in the [models_path] directory against the current application database
+        """
+        from ron import Application
+        from ron.models.basemodel import BaseModel
+        if self.models == None or not Application().db:
+            return
+        models_namespace = self.__namespace + ".models"  # TODO: allow customize this
+        try:
+            models_package = import_module(models_namespace)
+        except:
+            models_package = None
+        if models_package:
+            models_modules = self._get_package_modules(models_package)
+            for model_name in models_modules:
+                imported_model = import_module('.' + model_name, package=models_namespace)
+                for i in dir(imported_model):
+                    attribute = getattr(imported_model, i)
+                    if inspect.isclass(attribute) and issubclass(attribute, BaseModel):
+                        self.models.append(attribute)
+            Application().db().database.create_tables(self.models)
 
     def init_modules(self, modules):
         for module_name in modules:

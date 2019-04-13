@@ -15,7 +15,6 @@ class Application(Module, metaclass=Singleton):
         Module.__init__(self, config=config, catchall=catchall, autojson=autojson)
         # self.load_components()
 
-
     def get_with_middleware(self):
         """
         Returns current application applying middlewares from configuration

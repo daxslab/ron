@@ -1,4 +1,10 @@
-from beaker.cache import CacheManager
+import sys
+
+try:
+    from beaker.cache import CacheManager
+except ModuleNotFoundError as e:
+    print("Required beaker module, try to install it with 'pip install beaker'")
+    sys.exit(1)
 
 class CacheComponent(CacheManager):
 

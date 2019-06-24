@@ -1,4 +1,10 @@
-from bottle_peewee import PeeweePlugin
+import sys
+
+try:
+    from bottle_peewee import PeeweePlugin
+except ModuleNotFoundError as e:
+    print("Required bottle_peewee module, try to install it with 'pip install bottle-peewee'")
+    sys.exit(1)
 
 from ron import Application
 

@@ -11,14 +11,20 @@ def routeapp(obj, app):
         if hasattr(attr, 'route'):
             if isinstance(attr.route, dict):
                 route_params = attr.route
+                if obj.base_route:
+                    route_params['path'] = obj.base_route + route_params['path']
                 app.route(**route_params)(attr)
             elif isinstance(attr.route, list):
                 for route_data in attr.route:
                     route_params = route_data
+                    if obj.base_route:
+                        route_params['path'] = obj.base_route + route_params['path']
                     app.route(**route_params)(attr)
 
 
 class Controller:
+
+    base_route = None
 
     views_path = None
 

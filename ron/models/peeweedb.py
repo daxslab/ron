@@ -14,7 +14,7 @@ class PeeweeDB:
     Models component using the peewee ORM
     """
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args, module=None, **kwargs):
         app = Application()
 
         options = {}
@@ -23,6 +23,8 @@ class PeeweeDB:
             options[option] = value
 
         self.db = PeeweePlugin(**options)
+
+        self.module = module
 
         app.module_plugins.append(self.db)
 

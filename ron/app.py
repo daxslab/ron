@@ -1,5 +1,6 @@
 import os
 
+import sys
 from bottle import static_file
 
 from ron.base import Module
@@ -12,6 +13,12 @@ class Application(Module, metaclass=Singleton):
 
     # application instance has no controllers
     controllers = None
+
+    # default application path on running script
+    base_path = sys.path[0]
+
+    # default application layout path
+    layout = os.path.join(base_path, 'main/views/layout.tpl')
 
     def __init__(self, config=None, catchall=True, autojson=True):
         # self.__name__ = name

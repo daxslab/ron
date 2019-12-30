@@ -2,9 +2,14 @@ import os
 
 import sys
 from bottle import static_file
+from venv.src.ron.ron.caching.cache import CacheComponent
 
 from ron.base import Module
 from ron.base.singleton import Singleton
+from ron.models import PeeweeDB
+from ron.web.session import SessionComponent
+from ron.web.urlmanager import UrlManagerComponent
+
 
 class Application(Module, metaclass=Singleton):
 
@@ -16,6 +21,14 @@ class Application(Module, metaclass=Singleton):
 
     # default application layout path
     layout = os.path.join(base_path, 'main/views/layout.tpl')
+
+    cache_component: CacheComponent
+
+    session_manager: SessionComponent
+
+    db: PeeweeDB
+
+    url_manager: UrlManagerComponent
 
     def __init__(self, config=None, catchall=True, autojson=True):
         # self.__name__ = name

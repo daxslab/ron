@@ -20,7 +20,7 @@ class UrlManagerComponent(RonObject):
             except:
                 raise InvalidConfigurationException()
 
-    def remove_defined_rules(self):
+    def remove_defined_routes(self):
         current_routes = [r for r in Application().routes]
 
         for default_route in Application().routes:

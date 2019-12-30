@@ -11,9 +11,6 @@ class Application(Module, metaclass=Singleton):
     # configuration information for this application
     middlewares = []
 
-    # application instance has no controllers
-    controllers = None
-
     # default application path on running script
     base_path = sys.path[0]
 
@@ -46,3 +43,8 @@ class Application(Module, metaclass=Singleton):
         @self.route('/static/_<version:re:\d+\.\d+\.\d+>/<filename:path>')
         def server_static(filename, path='', version=None):
             return static_file(filename, root=os.path.join(path, 'static'))
+
+    def find_action(self, action):
+        action_name = action.split('.')[-1]
+        controller_namespace = '.'.join(action.split('.')[0:-1])
+        return getattr(self.controllers[controller_namespace], action_name)

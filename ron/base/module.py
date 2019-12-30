@@ -29,7 +29,7 @@ class Module(Bottle, RonObject):
     # mount type can be used for defining mount behavior, can be "mount" or "merge"
     mount_type = 'mount'
 
-    controllers = []
+    controllers = {}
 
     models = []
 
@@ -107,15 +107,21 @@ class Module(Bottle, RonObject):
         if self.controllers == None:
             return
         controllers_namespace = self.__namespace + ".controllers"  # TODO: allow customize this
-        controllers_package = import_module(controllers_namespace)
+        try:
+            controllers_package = import_module(controllers_namespace)
+        except:
+            return None
 
+        from ron import Application
         controllers_modules = self._get_package_modules(controllers_package)
         for controller_name in controllers_modules:
             imported_controller = import_module('.' + controller_name, package=controllers_namespace)
             for i in dir(imported_controller):
                 attribute = getattr(imported_controller, i)
                 if inspect.isclass(attribute) and issubclass(attribute, Controller):
-                    self.controllers.append(attribute(self))
+                    controller_class = attribute(self)
+                    self.controllers[controllers_namespace+'.'+controller_name] = controller_class
+                    Application().controllers[controllers_namespace+'.'+controller_name] = controller_class
 
     def init_models(self):
         """
@@ -154,6 +160,10 @@ class Module(Bottle, RonObject):
                     'Mount type should be "mount" or "merge", not {mount_type}'.format(mount_type=self.mount_type))
             # self.modules.append(module_instance)
             modules[module_name] = module_instance
+        from ron import Application
+        app = Application()
+        app.url_manager.remove_defined_rules()
+        app.url_manager.set_routes()
 
     def app(self):
         current = self

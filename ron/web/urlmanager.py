@@ -8,12 +8,12 @@ from ron.exceptions.invalid_configuration_exception import InvalidConfigurationE
 
 class UrlManagerComponent(RonObject):
 
-    routes = []
+    rules = []
 
     remove_rules = []
 
     def set_routes(self):
-        for route in self.routes:
+        for route in self.rules:
             try:
                 bottle_route = [route[0], route[1], Application().find_action(route[2])]
                 Application().route(*bottle_route)

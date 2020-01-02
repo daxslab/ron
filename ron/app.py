@@ -1,17 +1,38 @@
 import os
 
+import sys
 from bottle import static_file
 
 from ron.base import Module
 from ron.base.singleton import Singleton
+from ron.caching.cache import CacheComponent
+from ron.models import PeeweeDB
+from ron.web.session import SessionComponent
+from ron.web.urlmanager import UrlManagerComponent
+
 
 class Application(Module, metaclass=Singleton):
 
     # configuration information for this application
     middlewares = []
 
-    # application instance has no controllers
-    controllers = None
+    # default application path on running script
+    base_path = sys.path[0]
+
+    # default application layout path
+    layout = os.path.join(base_path, 'main/views/layout.tpl')
+
+    # application cache component
+    cache_component: CacheComponent
+
+    # application session component
+    session_manager: SessionComponent
+
+    # application database component
+    db: PeeweeDB
+
+    # application URL manager component
+    url_manager: UrlManagerComponent
 
     def __init__(self, config=None, catchall=True, autojson=True):
         # self.__name__ = name
@@ -39,3 +60,8 @@ class Application(Module, metaclass=Singleton):
         @self.route('/static/_<version:re:\d+\.\d+\.\d+>/<filename:path>')
         def server_static(filename, path='', version=None):
             return static_file(filename, root=os.path.join(path, 'static'))
+
+    def find_action(self, action):
+        action_name = action.split('.')[-1]
+        controller_namespace = '.'.join(action.split('.')[0:-1])
+        return getattr(self.controllers[controller_namespace], action_name)

@@ -6,8 +6,8 @@ from importlib import import_module
 from bottle import Bottle
 
 from ron.base.ronobject import RonObject
+from ron.base.view import View
 from ron.exceptions.invalid_configuration_exception import InvalidConfigurationException
-from ron.templates.yatl_template import YatlTemplate
 from ron.web import Controller
 
 
@@ -20,11 +20,8 @@ class Module(Bottle, RonObject):
     A module may consist of sub-modules.
     """
 
-    # template adapter
-    template_adapter = YatlTemplate
-
-    # views path
-    views_path = 'views'
+    # view object
+    view = None
 
     # modules
     modules = []
@@ -32,7 +29,7 @@ class Module(Bottle, RonObject):
     # mount type can be used for defining mount behavior, can be "mount" or "merge"
     mount_type = 'mount'
 
-    controllers = []
+    controllers = {}
 
     models = []
 
@@ -58,11 +55,14 @@ class Module(Bottle, RonObject):
         Bottle.__init__(self, catchall, autojson)
         RonObject.__init__(self, config=config)
 
+        if not self.view:
+            self.view = View(config = {'module':self})
+
         if isinstance(config, dict):
             self.__namespace = self._get_module_namespace()
-            self.__package = import_module(self.__namespace)
-            self.base_path = os.path.dirname(self.__package.__file__)
-            self.views_path = os.path.join(self.base_path, self.views_path)
+            if not self.base_path:
+                self.__package = import_module(self.__namespace)
+                self.base_path = os.path.dirname(self.__package.__file__)
             self.parent = parent
 
         self.load_components()
@@ -76,6 +76,12 @@ class Module(Bottle, RonObject):
             start_on_initialize = component_data.get('on_initialize', False)
             if start_on_initialize == on_initialize:
                 component_data.pop('on_initialize', None)
+
+                # inject parent module in component
+                if not component_data.get('options', None):
+                    component_data['options'] = {}
+
+                component_data['options']['module'] = self
                 component = RonObject.instanceObject(component_data)
                 setattr(self, name, component)
 
@@ -101,15 +107,21 @@ class Module(Bottle, RonObject):
         if self.controllers == None:
             return
         controllers_namespace = self.__namespace + ".controllers"  # TODO: allow customize this
-        controllers_package = import_module(controllers_namespace)
+        try:
+            controllers_package = import_module(controllers_namespace)
+        except:
+            return None
 
+        from ron import Application
         controllers_modules = self._get_package_modules(controllers_package)
         for controller_name in controllers_modules:
             imported_controller = import_module('.' + controller_name, package=controllers_namespace)
             for i in dir(imported_controller):
                 attribute = getattr(imported_controller, i)
                 if inspect.isclass(attribute) and issubclass(attribute, Controller):
-                    self.controllers.append(attribute(self))
+                    controller_class = attribute(self)
+                    self.controllers[controllers_namespace+'.'+controller_name] = controller_class
+                    Application().controllers[controllers_namespace+'.'+controller_name] = controller_class
 
     def init_models(self):
         """
@@ -148,6 +160,10 @@ class Module(Bottle, RonObject):
                     'Mount type should be "mount" or "merge", not {mount_type}'.format(mount_type=self.mount_type))
             # self.modules.append(module_instance)
             modules[module_name] = module_instance
+        from ron import Application
+        app = Application()
+        app.url_manager.remove_defined_routes()
+        app.url_manager.set_routes()
 
     def app(self):
         current = self

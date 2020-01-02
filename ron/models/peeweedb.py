@@ -6,15 +6,14 @@ except ModuleNotFoundError as e:
     print("Required bottle_peewee module, try to install it with 'pip install bottle-peewee'")
     sys.exit(1)
 
-from ron import Application
-
 
 class PeeweeDB:
     """
     Models component using the peewee ORM
     """
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args, module=None, **kwargs):
+        from ron import Application
         app = Application()
 
         options = {}
@@ -23,6 +22,8 @@ class PeeweeDB:
             options[option] = value
 
         self.db = PeeweePlugin(**options)
+
+        self.module = module
 
         app.module_plugins.append(self.db)
 

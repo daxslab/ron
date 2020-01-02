@@ -1,14 +1,12 @@
 from beaker.middleware import SessionMiddleware
 
-from ron import Application, request
-
-
 class SessionComponent:
     """
     Session component using the beaker session middleware
     """
 
     def __init__(self, *args, **kwargs):
+        from ron import Application
         app = Application()
 
         options = {}
@@ -22,4 +20,5 @@ class SessionComponent:
         })
 
     def __call__(self, *args, **kwargs):
+        from ron import request
         return request.environ.get('beaker.session')

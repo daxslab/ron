@@ -14,25 +14,25 @@ from ron.web.urlmanager import UrlManagerComponent
 class Application(Module, metaclass=Singleton):
 
     # configuration information for this application
-    middlewares = []
+    middlewares: list = []
 
     # default application path on running script
-    base_path = sys.path[0]
+    base_path: str = sys.path[0]
 
     # default application layout path
-    layout = os.path.join(base_path, 'main/views/layout.tpl')
+    layout: str = os.path.join(base_path, 'main/views/layout.tpl')
 
     # application cache component
-    cache_component: CacheComponent
+    cache_component: CacheComponent = None
 
     # application session component
-    session_manager: SessionComponent
+    session_manager: SessionComponent = None
 
     # application database component
-    db: PeeweeDB
+    db: PeeweeDB = None
 
     # application URL manager component
-    url_manager: UrlManagerComponent
+    url_manager: UrlManagerComponent = None
 
     def __init__(self, config=None, catchall=True, autojson=True):
         # self.__name__ = name

@@ -2,10 +2,10 @@ import os
 
 import sys
 from bottle import static_file
-from venv.src.ron.ron.caching.cache import CacheComponent
 
 from ron.base import Module
 from ron.base.singleton import Singleton
+from ron.caching.cache import CacheComponent
 from ron.models import PeeweeDB
 from ron.web.session import SessionComponent
 from ron.web.urlmanager import UrlManagerComponent

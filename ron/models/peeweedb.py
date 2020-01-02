@@ -6,8 +6,6 @@ except ModuleNotFoundError as e:
     print("Required bottle_peewee module, try to install it with 'pip install bottle-peewee'")
     sys.exit(1)
 
-from ron import Application
-
 
 class PeeweeDB:
     """
@@ -15,6 +13,7 @@ class PeeweeDB:
     """
 
     def __init__(self, *args, module=None, **kwargs):
+        from ron import Application
         app = Application()
 
         options = {}

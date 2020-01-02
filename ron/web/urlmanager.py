@@ -1,10 +1,8 @@
 import re
 from bottle import Router
 
-from ron import Application
 from ron.base.ronobject import RonObject
 from ron.exceptions.invalid_configuration_exception import InvalidConfigurationException
-
 
 class UrlManagerComponent(RonObject):
 
@@ -13,6 +11,7 @@ class UrlManagerComponent(RonObject):
     remove_rules = []
 
     def set_routes(self):
+        from ron import Application
         for route in self.rules:
             try:
                 bottle_route = [route[0], route[1], Application().find_action(route[2])]
@@ -21,6 +20,7 @@ class UrlManagerComponent(RonObject):
                 raise InvalidConfigurationException()
 
     def remove_defined_routes(self):
+        from ron import Application
         current_routes = [r for r in Application().routes]
 
         for default_route in Application().routes:

@@ -22,12 +22,16 @@ class Application(Module, metaclass=Singleton):
     # default application layout path
     layout = os.path.join(base_path, 'main/views/layout.tpl')
 
+    # application cache component
     cache_component: CacheComponent
 
+    # application session component
     session_manager: SessionComponent
 
+    # application database component
     db: PeeweeDB
 
+    # application URL manager component
     url_manager: UrlManagerComponent
 
     def __init__(self, config=None, catchall=True, autojson=True):

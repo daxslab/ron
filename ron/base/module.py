@@ -162,8 +162,9 @@ class Module(Bottle, RonObject):
             modules[module_name] = module_instance
         from ron import Application
         app = Application()
-        app.url_manager.remove_defined_routes()
-        app.url_manager.set_routes()
+        if app.url_manager:
+            app.url_manager.remove_defined_routes()
+            app.url_manager.set_routes()
 
     def app(self):
         current = self

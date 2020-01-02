@@ -4,7 +4,6 @@ import os
 from bottle import template as bottle_template
 
 from ron.base.basecomponent import BaseComponent
-from ron.base.ronobject import RonObject
 from collections import MutableMapping
 
 from ron.templates.yatl_template import YatlTemplate
@@ -31,8 +30,6 @@ class View(BaseComponent):
         :rtype: str
         """
         template = functools.partial(bottle_template, template_adapter=self.template_adapter)
-        # template = functools.partial(bottle_template, template_lookup=[self.path], template_adapter=self.template_adapter)
-        # return template(view_file, *args,  **params)
         from ron import Application
         return template(view_file, *args, template_lookup=[os.path.join(self.module.base_path, self.path)], layout=Application().layout, **params)
 

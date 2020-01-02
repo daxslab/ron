@@ -1,7 +1,6 @@
 import functools
 from functools import wraps
 from inflection import underscore
-from bottle import view
 
 def routeapp(obj, app):
     for kw in dir(obj):
@@ -24,15 +23,10 @@ class Controller:
 
     base_route = None
 
-    # views_path = None
-
     module = None
 
     def __init__(self, module):
         self.module = module
-        # self.views_path = module.views_path
-        # self.view = functools.partial(view, template_adapter=self.module.template_adapter)
-
         routeapp(self, self.module.app())
 
     @staticmethod
@@ -52,6 +46,15 @@ class Controller:
         return decorator
 
     def action(route=None, filepath=None, ext='.tpl', **route_args):
+        ''' Decorator: renders a template for a handler.
+                        The handler can control its behavior like that:
+
+                          - return a dict of template vars to fill out the template
+                          - return something other than a dict and the view decorator will not
+                            process the template, but return the handler result as is.
+                            This includes returning a HTTPResponse(dict) to get,
+                            for instance, JSON with autojson or other castfilters.
+                    '''
         def real_decorator(func):
 
             Controller.add_route(func, route, **route_args)
@@ -64,9 +67,28 @@ class Controller:
                     filename = underscore(self.__class__.__name__) + '/' + action + ext
                 else:
                     filename = filepath
-                # return self.module.view.render(filename, template_lookup=[self.views_path],  **result)
                 return self.module.view.render(filename, **result)
 
             return wrapper
 
         return real_decorator
+
+    def view(tpl_name):
+        ''' Decorator: renders a template for a handler.
+                The handler can control its behavior like that:
+
+                  - return a dict of template vars to fill out the template
+                  - return something other than a dict and the view decorator will not
+                    process the template, but return the handler result as is.
+                    This includes returning a HTTPResponse(dict) to get,
+                    for instance, JSON with autojson or other castfilters.
+            '''
+        def decorator(func):
+            @functools.wraps(func)
+            def wrapper(self, *args, **kwargs):
+                result = func(self, *args, **kwargs)
+                return self.module.view.render(tpl_name, **result)
+
+            return wrapper
+
+        return decorator

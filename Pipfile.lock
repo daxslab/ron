@@ -18,11 +18,11 @@
     "default": {
         "bottle": {
             "hashes": [
-                "sha256:9c310da61e7df2b6ac257d8a90811899ccb3a9743e77e947101072a2e3186726",
-                "sha256:ca43beafbdccabbe31b758a4f34d1e44985a9b9539516775208b2b0f903eafa0"
+                "sha256:3c97e1e955c11e4ad2d73a60cdf83c4f4cf7b8b73c8344fc4b72f985432605cb",
+                "sha256:544023cd2cd6d382ebf9675fa0544d4d20e19d3a13b6932a812d099fb2f6cb84"
             ],
             "index": "pypi",
-            "version": "==0.12.16"
+            "version": "==0.12.20"
         },
         "bottle-peewee": {
             "hashes": [
@@ -41,9 +41,9 @@
         },
         "peewee": {
             "hashes": [
-                "sha256:603337153536b85c3c5b5e84df4ae0f9cbaff09163a3739451d167e0ad3fe1f7"
+                "sha256:23271422b332c82d30c92597dee905ee831b56c6d99c33e05901e6891c75fe15"
             ],
-            "version": "==3.9.3"
+            "version": "==3.14.10"
         },
         "yatl": {
             "hashes": [

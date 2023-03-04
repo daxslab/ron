@@ -10,7 +10,7 @@ from distutils.core import setup
 setup(
     name='ron',
     version='0.1',
-    packages=['ron', 'ron.base', 'ron.caching', 'ron.exceptions', 'ron.templates', 'ron.web', 'ron.widgets', 'ron.models'],
+    packages=['ron', 'ron.base', 'ron.caching', 'ron.exceptions', 'ron.templates', 'ron.web', 'ron.widgets', 'ron.models', 'ron.helpers'],
     url='ron.daxslab.com',
     license='MIT',
     author='Daxslab',

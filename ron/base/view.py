@@ -4,7 +4,7 @@ import os
 from bottle import template as bottle_template
 
 from ron.base.basecomponent import BaseComponent
-from collections import MutableMapping
+from collections.abc import MutableMapping
 
 from ron.templates.yatl_template import YatlTemplate
 
